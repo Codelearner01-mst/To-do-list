@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+   <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 class="main-heading">My To-Do List</h1>
+
+        <form id="task-form" action="/add" method="post">
+            <input type="text" name="task" id="task-input" placeholder="Add a new task" required>
+            <button class="add-button" type="submit">Add Task</button>
+        </form>
+
+         <h1 class="tasklist-heading">Task List</h1>
+         <div class="tasklist-container">
+          <ol id="task-list">
+            <!-- Tasks will be dynamically added here -->
+          </ol>
+          <button id="clear-tasks" class="clear-btn">🧹 Clear All Tasks</button>
+         </div>
+    </div>
+
+</body>
+
+<script>
+    // DOM elements
+    const taskForm = document.getElementById('task-form');
+    const taskInput = document.getElementById('task-input');
+    const taskList = document.getElementById('task-list');
+    const clearTasksBtn = document.getElementById('clear-tasks');
+
+    // Task counter for unique IDs
+    let taskCounter = 0;
+
+    // Function to create a new task element
+    function createTaskElement(taskText) {
+        const listItem = document.createElement('li');
+        listItem.className = 'task-item';
+        listItem.dataset.taskId = ++taskCounter;
+        
+        // Create task text span
+        const taskSpan = document.createElement('span');
+        taskSpan.className = 'task-text';
+        taskSpan.textContent = taskText;
+        
+        // Create delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', function() {
+            deleteTask(listItem);
+        });
+        
+        // Create complete button
+        const completeBtn = document.createElement('button');
+        completeBtn.className = 'complete-btn';
+        completeBtn.textContent = 'Complete';
+        completeBtn.addEventListener('click', function() {
+            toggleComplete(listItem);
+        });
+        
+        // Append elements to list item
+        listItem.appendChild(taskSpan);
+        listItem.appendChild(completeBtn);
+        listItem.appendChild(deleteBtn);
+        
+        return listItem;
+    }
+
+    // Function to delete a task
+    function deleteTask(taskElement) {
+        if (confirm('Are you sure you want to delete this task?')) {
+            taskElement.remove();
+        }
+    }
+
+    // Function to toggle task completion
+    function toggleComplete(taskElement) {
+        const taskText = taskElement.querySelector('.task-text');
+        const completeBtn = taskElement.querySelector('.complete-btn');
+        
+        if (taskElement.classList.contains('completed')) {
+            taskElement.classList.remove('completed');
+            completeBtn.textContent = 'Complete';
+            taskText.style.textDecoration = 'none';
+        } else {
+            taskElement.classList.add('completed');
+            completeBtn.textContent = 'Undo';
+            taskText.style.textDecoration = 'line-through';
+        }
+    }
+
+    // Handle form submission to add a new task
+    taskForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        const taskText = taskInput.value.trim();
+
+        if (taskText) {
+            const newTask = createTaskElement(taskText);
+            taskList.appendChild(newTask);
+            taskInput.value = '';
+            taskInput.focus(); // Keep focus on input for better UX
+        }
+    });
+
+    // Handle clear all tasks
+    clearTasksBtn.addEventListener('click', function() {
+        if (taskList.children.length === 0) {
+            alert('No tasks to clear!');
+            return;
+        }
+        
+        if (confirm('Are you sure you want to clear all tasks?')) {
+            taskList.innerHTML = '';
+        }
+    });
+
+    // Add keyboard shortcut (Enter key) for adding tasks
+    taskInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            taskForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // Focus on input when page loads
+    window.addEventListener('load', function() {
+        taskInput.focus();
+    });
+</script>
+</html>
