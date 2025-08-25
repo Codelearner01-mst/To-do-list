@@ -6,6 +6,7 @@
     <title>To-Do List</title>
    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -71,13 +72,20 @@
         completeBtn.addEventListener('click', function() {
             toggleComplete(listItem);
         });
-        
+
+        // Create date span
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'task-date';
+        dateSpan.textContent = `Added on: ${formatDate(new Date())}`;
+
+
         // Append elements to list item
         listItem.appendChild(taskSpan);
+         listItem.appendChild(dateSpan);
         listItem.appendChild(completeBtn);
         listItem.appendChild(deleteBtn);
         listItem.appendChild(editBtn);
-        
+
         return listItem;
     }
 
@@ -112,6 +120,11 @@
             taskText.textContent = newTaskText.trim();
         }
         taskInput.focus(); // Keep focus on input after editing
+    }
+
+    //function to format date using dayjs
+    function formatDate(date) {
+        return dayjs(date).format('DD-MM-YY');
     }
 
     // Handle form submission to add a new task
