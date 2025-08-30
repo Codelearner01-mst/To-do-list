@@ -35,59 +35,50 @@
     const taskList = document.getElementById('task-list');
     const clearTasksBtn = document.getElementById('clear-tasks');
 
-    // Task counter for unique IDs
-    let taskCounter = 0;
+    function createTaskElement(elementName, className, textContent) {
+        const element = document.createElement(elementName);
+        element.className = className;
+        element.textContent = textContent;
+        return element;
+    }
 
-    // Function to create a new task element
-    function createTaskElement(taskText) {
+    // Function to create a new task item
+    function createTaskItem(taskText) {
+
+        // List-item: the container for each task
         const listItem = document.createElement('li');
         listItem.className = 'task-item';
-        listItem.dataset.taskId = ++taskCounter;
-        
-        // Create task text span
-        const taskSpan = document.createElement('span');
-        taskSpan.className = 'task-text';
-        taskSpan.textContent = taskText;
 
-        // Create edit button
-        const editBtn = document.createElement('button');
-        editBtn.className = 'edit-btn';
-        editBtn.textContent = 'Edit';
-        editBtn.addEventListener('click', function() {
-            editTask(listItem);
-        });
-
-        // Create delete button
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-btn';
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.addEventListener('click', function() {
-            deleteTask(listItem);
-        });
-        
-        // Create complete button
-        const completeBtn = document.createElement('button');
-        completeBtn.className = 'complete-btn';
-        completeBtn.textContent = 'Complete';
-        completeBtn.addEventListener('click', function() {
-            toggleComplete(listItem);
-        });
-
-        // Create date span
-        const dateSpan = document.createElement('span');
-        dateSpan.className = 'task-date';
-        dateSpan.textContent = `Added on: ${formatDate(new Date())}`;
+        // Create elements in the task item
+        const taskSpan = createTaskElement('span', 'task-text', taskText);
+        const editBtn = createTaskElement('button', 'edit-btn', 'Edit');
+        const deleteBtn = createTaskElement('button', 'delete-btn', 'Delete');
+        const completeBtn = createTaskElement('button', 'complete-btn', 'Complete');
+        const dateSpan = createTaskElement('span', 'task-date', `Added on: ${formatDate(new Date())}`);
 
 
         // Append elements to list item
         listItem.appendChild(taskSpan);
-         listItem.appendChild(dateSpan);
+        listItem.appendChild(dateSpan);
         listItem.appendChild(completeBtn);
         listItem.appendChild(deleteBtn);
         listItem.appendChild(editBtn);
 
         return listItem;
     }
+
+    taskList.addEventListener('click', function(event) {
+        listItem = event.target.closest('.task-item');
+        if (!listItem) return;
+
+        if (event.target.classList.contains('delete-btn')) {
+            deleteTask(listItem);
+        } else if (event.target.classList.contains('complete-btn')) {
+            toggleTaskCompletion(listItem);
+        } else if (event.target.classList.contains('edit-btn')) {
+            editTask(listItem);
+        }
+    });
 
     // Function to delete a task
     function deleteTask(taskElement) {
@@ -97,7 +88,7 @@
     }
 
     // Function to toggle task completion
-    function toggleComplete(taskElement) {
+    function toggleTaskCompletion(taskElement) {
         const taskText = taskElement.querySelector('.task-text');
         const completeBtn = taskElement.querySelector('.complete-btn');
         
@@ -105,7 +96,8 @@
             taskElement.classList.remove('completed');
             completeBtn.textContent = 'Complete';
             taskText.style.textDecoration = 'none';
-        } else {
+        } 
+        else {
             taskElement.classList.add('completed');
             completeBtn.textContent = 'Undo';
             taskText.style.textDecoration = 'line-through';
@@ -115,6 +107,7 @@
     function editTask(taskElement) {
         const taskText = taskElement.querySelector('.task-text');
         const newTaskText = prompt('Edit your task:', taskText.textContent);
+
         // If user cancels or enters an empty string, do nothing
         if (newTaskText !== null && newTaskText.trim() !== '') {
             taskText.textContent = newTaskText.trim();
@@ -128,20 +121,23 @@
     }
 
     // Handle form submission to add a new task
-    taskForm.addEventListener('submit', function(event) {
+    function handleTaskSubmit(event) {
         event.preventDefault();
         const taskText = taskInput.value.trim();
 
         if (taskText) {
-            const newTask = createTaskElement(taskText);
+            const newTask = createTaskItem(taskText);
             taskList.appendChild(newTask);
             taskInput.value = '';
             taskInput.focus(); // Keep focus on input for better UX
         }
+    };
+    taskForm.addEventListener('submit', function(event) {
+        handleTaskSubmit(event);
     });
 
     // Handle clear all tasks
-    clearTasksBtn.addEventListener('click', function() {
+    function clearAllTask() {
         if (taskList.children.length === 0) {
             alert('No tasks to clear!');
             return;
@@ -150,13 +146,20 @@
         if (confirm('Are you sure you want to clear all tasks?')) {
             taskList.innerHTML = '';
         }
+    };
+
+    clearTasksBtn.addEventListener('click', function() {
+        clearAllTask();
     });
 
     // Add keyboard shortcut (Enter key) for adding tasks
-    taskInput.addEventListener('keypress', function(event) {
+    function handleTaskInputKeyPress(event) {
         if (event.key === 'Enter') {
             taskForm.dispatchEvent(new Event('submit'));
         }
+    }
+    taskInput.addEventListener('keypress', function(event) {
+        handleTaskInputKeyPress(event);
     });
 
     // Focus on input when page loads

@@ -6,7 +6,8 @@ A simple and responsive To-Do List application built with **HTML**, **CSS**, and
 ## ✨ Features
 - ➕ **Add Tasks** — Quickly add new tasks to your list.  
 - ✔ **Mark as Complete** — Tick off tasks when they’re done.  
-- 🗑 **Delete Tasks** — Remove tasks you no longer need.  
+- 🗑 **Delete Tasks** — Remove tasks you no longer need. 
+- **Edit tasks** - change your task by editinhg the name 
 
 ## 🚀 How It Works
 1. Type your task in the input field.  
