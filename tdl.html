@@ -1,170 +1,207 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>To-Do List</title>
-   <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
-    <link rel="stylesheet" href="style.css">
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
+    <link rel="stylesheet" href="style.css" />
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
-</head>
-<body>
-    <div class="container">
-        <h1 class="main-heading">To-Do List</h1>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  </head>
+  <body>
+    <div
+      class="flex items-center justify-center flex-col max-w-2xl h-60% m-auto p-12 bg-white rounded-lg shadow-md shadow-blue-300 mt-10 mb-10"
+    >
+      <h1
+        class="text-3xl pb-3 mb-8 text-center text-blue-800 font-serif underline"
+      >
+        To-Do List
+      </h1>
+      <form
+        class="flex items-center gap-2 w-full max-w-xl"
+        id="task-form"
+        action="/add"
+        method="post"
+      >
+        <input
+          class="p-3 border flex-grow border-gray-300 rounded text-lg outline-none focus:ring-2 focus:ring-blue-300"
+          type="text"
+          name="task"
+          id="task-input"
+          placeholder="Add a new task"
+          required
+        />
+        <button
+          class="add-btn bg-blue-500 hover:bg-blue-700 text-white py-3 px-6 rounded"
+          type="submit"
+        >
+          Add Task
+        </button>
+      </form>
 
-        <form id="task-form" action="/add" method="post">
-            <input type="text" name="task" id="task-input" placeholder="Add a new task" required>
-            <button class="add-button" type="submit">Add Task</button>
-        </form>
-
-         <h1 class="tasklist-heading">Task List</h1>
-         <div class="tasklist-container">
-          <ol id="task-list">
-            <!-- Tasks will be dynamically added here -->
-          </ol>
-          <button id="clear-tasks" class="clear-btn">🧹 Clear All Tasks</button>
-         </div>
+      <h2
+        class="text-blue-800 text-2xl mt-8 font-bold text-center underline w-51 mb-5"
+      >
+        To dos
+      </h2>
+      <div class="tasklist-container">
+        <ol class="max-w-full p-0 list-none" id="task-list">
+          <!-- Tasks will be dynamically added here -->
+        </ol>
+      </div>
+      <button
+        id="clear-tasks"
+        class="bg-gradient-to-r from-red-200 to-yellow-500 text-white rounded-3xl p-3 text-lg font-bold shadow-md cursor-pointer mt-5 transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-2xl duration-200 outline-none items-center gap-2"
+      >
+        Clear All Tasks
+      </button>
     </div>
+  </body>
 
-</body>
-
-<script>
+  <script>
     // DOM elements
-    const taskForm = document.getElementById('task-form');
-    const taskInput = document.getElementById('task-input');
-    const taskList = document.getElementById('task-list');
-    const clearTasksBtn = document.getElementById('clear-tasks');
+    const taskForm = document.getElementById("task-form");
+    const taskInput = document.getElementById("task-input");
+    const taskList = document.getElementById("task-list");
+    const clearTasksBtn = document.getElementById("clear-tasks");
 
-    function createTaskElement(elementName, className, textContent) {
-        const element = document.createElement(elementName);
-        element.className = className;
-        element.textContent = textContent;
-        return element;
+    function createElement(elementName, className, textContent = "") {
+      const element = document.createElement(elementName);
+      element.className = className;
+      element.textContent = textContent;
+      return element;
     }
 
     // Function to create a new task item
     function createTaskItem(taskText) {
+      // List-item: the container for each task
+      const listItem = createElement(
+        "li",
+        "task-item flex items-center justify-center bg-white m-2 p-4 rounded-2 shadow-md shadow-black-200 hover:shadow-blue-300",
+      );
 
-        // List-item: the container for each task
-        const listItem = document.createElement('li');
-        listItem.className = 'task-item';
+      const editBtn = createElement(
+        "button",
+        "edit-btn bg-blue-400 text-white p-2 rounded-md cursor-pointer  ml-2 text-medium",
+        "Edit",
+      );
+      const deleteBtn = createElement("button", "delete-btn", "Delete");
+      const completeBtn = createElement("button", "complete-btn", "Complete");
+      const dateSpan = createElement(
+        "span",
+        "task-date",
+        `Added on: ${formatDate()}`,
+      );
 
-        // Create elements in the task item
-        const taskSpan = createTaskElement('span', 'task-text', taskText);
-        const editBtn = createTaskElement('button', 'edit-btn', 'Edit');
-        const deleteBtn = createTaskElement('button', 'delete-btn', 'Delete');
-        const completeBtn = createTaskElement('button', 'complete-btn', 'Complete');
-        const dateSpan = createTaskElement('span', 'task-date', `Added on: ${formatDate(new Date())}`);
+      const taskName = createElement("p", "task-text", taskText);
 
+      // Append elements to list item
+      listItem.appendChild(taskName);
+      listItem.appendChild(dateSpan);
+      listItem.appendChild(completeBtn);
+      listItem.appendChild(deleteBtn);
+      listItem.appendChild(editBtn);
 
-        // Append elements to list item
-        listItem.appendChild(taskSpan);
-        listItem.appendChild(dateSpan);
-        listItem.appendChild(completeBtn);
-        listItem.appendChild(deleteBtn);
-        listItem.appendChild(editBtn);
-
-        return listItem;
+      return listItem;
     }
 
-    taskList.addEventListener('click', function(event) {
-        listItem = event.target.closest('.task-item');
-        if (!listItem) return;
+    taskList.addEventListener("click", function (event) {
+      listItem = event.target.closest(".task-item");
+      if (!listItem) return;
 
-        if (event.target.classList.contains('delete-btn')) {
-            deleteTask(listItem);
-        } else if (event.target.classList.contains('complete-btn')) {
-            toggleTaskCompletion(listItem);
-        } else if (event.target.classList.contains('edit-btn')) {
-            editTask(listItem);
-        }
+      if (event.target.classList.contains("delete-btn")) {
+        deleteTask(listItem);
+      } else if (event.target.classList.contains("complete-btn")) {
+        toggleTaskCompletion(listItem);
+      } else if (event.target.classList.contains("edit-btn")) {
+        editTask(listItem);
+      }
     });
 
     // Function to delete a task
     function deleteTask(taskElement) {
-        if (confirm('Are you sure you want to delete this task?')) {
-            taskElement.remove();
-        }
+      if (confirm("Are you sure you want to delete this task?")) {
+        taskElement.remove();
+      }
     }
 
     // Function to toggle task completion
     function toggleTaskCompletion(taskElement) {
-        const taskText = taskElement.querySelector('.task-text');
-        const completeBtn = taskElement.querySelector('.complete-btn');
-        
-        if (taskElement.classList.contains('completed')) {
-            taskElement.classList.remove('completed');
-            completeBtn.textContent = 'Complete';
-            taskText.style.textDecoration = 'none';
-        } 
-        else {
-            taskElement.classList.add('completed');
-            completeBtn.textContent = 'Undo';
-            taskText.style.textDecoration = 'line-through';
-        }
+      const taskText = taskElement.querySelector(".task-text");
+      const completeBtn = taskElement.querySelector(".complete-btn");
+
+      if (taskElement.classList.contains("completed")) {
+        taskElement.classList.remove("completed");
+        completeBtn.textContent = "Complete";
+        taskText.style.textDecoration = "none";
+      } else {
+        taskElement.classList.add("completed");
+        completeBtn.textContent = "Undo";
+        taskText.style.textDecoration = "line-through";
+      }
     }
 
     function editTask(taskElement) {
-        const taskText = taskElement.querySelector('.task-text');
-        const newTaskText = prompt('Edit your task:', taskText.textContent);
+      const taskText = taskElement.querySelector(".task-text");
+      const newTaskText = prompt("Edit your task:", taskText.textContent);
 
-        // If user cancels or enters an empty string, do nothing
-        if (newTaskText !== null && newTaskText.trim() !== '') {
-            taskText.textContent = newTaskText.trim();
-        }
-        taskInput.focus(); // Keep focus on input after editing
+      if (newTaskText !== null && newTaskText.trim() !== "") {
+        taskText.textContent = newTaskText.trim();
+      }
+      taskInput.focus(); // Keep focus on input after editing
     }
 
-    //function to format date using dayjs
-    function formatDate(date) {
-        return dayjs(date).format('DD-MM-YY');
+    function formatDate() {
+      const date = new Date();
+      return date.toDateString();
     }
 
     // Handle form submission to add a new task
     function handleTaskSubmit(event) {
-        event.preventDefault();
-        const taskText = taskInput.value.trim();
+      event.preventDefault();
+      const taskText = taskInput.value.trim();
 
-        if (taskText) {
-            const newTask = createTaskItem(taskText);
-            taskList.appendChild(newTask);
-            taskInput.value = '';
-            taskInput.focus(); // Keep focus on input for better UX
-        }
-    };
-    taskForm.addEventListener('submit', function(event) {
-        handleTaskSubmit(event);
+      if (taskText) {
+        const newTask = createTaskItem(taskText);
+        taskList.appendChild(newTask);
+        taskInput.value = "";
+        taskInput.focus();
+      }
+    }
+    taskForm.addEventListener("submit", function (event) {
+      handleTaskSubmit(event);
     });
 
     // Handle clear all tasks
     function clearAllTask() {
-        if (taskList.children.length === 0) {
-            alert('No tasks to clear!');
-            return;
-        }
-        
-        if (confirm('Are you sure you want to clear all tasks?')) {
-            taskList.innerHTML = '';
-        }
-    };
+      if (taskList.children.length === 0) {
+        alert("No tasks to clear!");
+        return;
+      }
 
-    clearTasksBtn.addEventListener('click', function() {
-        clearAllTask();
+      if (confirm("Are you sure you want to clear all tasks?")) {
+        taskList.innerHTML = "";
+      }
+    }
+
+    clearTasksBtn.addEventListener("click", function () {
+      clearAllTask();
     });
 
     // Add keyboard shortcut (Enter key) for adding tasks
     function handleTaskInputKeyPress(event) {
-        if (event.key === 'Enter') {
-            taskForm.dispatchEvent(new Event('submit'));
-        }
+      if (event.key === "Enter") {
+        taskForm.dispatchEvent(new Event("submit"));
+      }
     }
-    taskInput.addEventListener('keypress', function(event) {
-        handleTaskInputKeyPress(event);
+    taskInput.addEventListener("keypress", function (event) {
+      handleTaskInputKeyPress(event);
     });
 
     // Focus on input when page loads
-    window.addEventListener('load', function() {
-        taskInput.focus();
+    window.addEventListener("load", function () {
+      taskInput.focus();
     });
-</script>
+  </script>
 </html>
